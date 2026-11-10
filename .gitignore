@@ -6,6 +6,10 @@ dist/
 # dependencies
 node_modules/
 
+# promo tool (dotnet)
+bin/
+obj/
+
 # logs
 npm-debug.log*
 yarn-debug.log*

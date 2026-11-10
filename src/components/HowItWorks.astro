@@ -91,11 +91,11 @@ const internals = [
   },
   {
     title: 'It asks Windows what each layout would type',
-    text: 'On the hotkey the phrase is replayed under every other installed layout, and each result is spell-checked. The one with the most real words wins. If none has any, your text is left untouched.',
+    text: 'On the hotkey the phrase is replayed under every other installed layout, and each result is spell-checked. The one with the most real words wins. A wrong-layout word with a typo in it is still moved to the other alphabet, where the typo can be fixed. Text that already reads as real words is never touched.',
   },
   {
-    title: 'Each dictionary only judges its own alphabet',
-    text: 'A Cyrillic dictionary has no opinion on Latin text, and would otherwise call any Latin gibberish “correct”. Words are only checked against dictionaries of a matching script.',
+    title: 'Each word is judged by the language it was typed in',
+    text: 'Only the dictionary of the layout you typed under gets a say. Russian and Ukrainian share an alphabet, and a Russian typo should not pass just because Ukrainian happens to have such a word.',
   },
   {
     title: 'It lets go when it loses track',
