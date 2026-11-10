@@ -1,0 +1,144 @@
+---
+import Demo, { type Step } from './Demo.astro';
+
+interface Scene {
+  n: string;
+  title: string;
+  text: string;
+  window: string;
+  keys: string[];
+  steps: Step[];
+  still: string;
+  label: string;
+}
+
+const scenes: Scene[] = [
+  {
+    n: '1',
+    title: 'Fix the layout with one key',
+    text: 'You look up and the whole sentence is gibberish: the wrong layout was on. Press Right Alt. Linter deletes the phrase, retypes it in the layout where it makes real words, and switches the layout so you can carry on. Not what you wanted? Press the same key again and it is put back exactly as it was.',
+    window: 'Chat',
+    keys: ['Right Alt'],
+    steps: [
+      ['type', 'ghbdtn? rfr ltkf'],
+      ['wait', 600],
+      ['key', 'Right Alt'],
+      ['erase', 16],
+      ['type', 'привет, как дела', 22],
+      ['note', 'Converted'],
+      ['wait', 1700],
+      ['key', 'Right Alt'],
+      ['erase', 16],
+      ['type', 'ghbdtn? rfr ltkf', 22],
+      ['note', 'Pressed again: undone'],
+      ['wait', 1700],
+      ['key', 'Right Alt'],
+      ['erase', 16],
+      ['type', 'привет, как дела', 22],
+      ['note', 'Converted'],
+    ],
+    still: 'привет, как дела',
+    label: 'Animation: a phrase typed in the wrong layout is converted with Right Alt, restored with a second press, and converted again.',
+  },
+  {
+    n: '2',
+    title: 'Hear a typo, fix it without leaving the keyboard',
+    text: 'When you finish a word that the Windows dictionary does not know, Linter plays a short sound, nothing pops up and nothing is changed for you. If it really is a typo, press Right Ctrl straight away and the word is replaced with the dictionary’s first suggestion. If the word is fine (a name, a brand, slang), press F9 and it is never signalled again.',
+    window: 'Email',
+    keys: ['Right Ctrl', 'F9'],
+    steps: [
+      ['type', 'Всем превет'],
+      ['type', ' '],
+      ['flag', 'превет'],
+      ['beep'],
+      ['note', 'Signal: not in the dictionary'],
+      ['wait', 1100],
+      ['key', 'Right Ctrl'],
+      ['replace', 'превет', 'привет'],
+      ['unflag'],
+      ['note', 'Replaced with the suggestion'],
+      ['wait', 900],
+      ['type', 'и хорошего дня!'],
+    ],
+    still: 'Всем привет и хорошего дня!',
+    label: 'Animation: the misspelled word “превет” triggers a signal, Right Ctrl is pressed, and it is replaced with “привет”.',
+  },
+  {
+    n: '3',
+    title: 'Works on text that is already there',
+    text: 'Found a line you typed in the wrong layout an hour ago? Select it and press Shift + Pause. Linter works out which layout could have produced those characters, converts the selection, and leaves it alone if it already reads fine. Your clipboard text is put back afterwards.',
+    window: 'Notes',
+    keys: ['Shift + Pause'],
+    steps: [
+      ['set', 'Subject: руддщ цщкдв'],
+      ['wait', 900],
+      ['select', 'руддщ цщкдв'],
+      ['note', 'Select the text'],
+      ['wait', 1000],
+      ['key', 'Shift + Pause'],
+      ['replace', 'руддщ цщкдв', 'hello world'],
+      ['note', 'Converted in place'],
+    ],
+    still: 'Subject: hello world',
+    label: 'Animation: the selected text “руддщ цщкдв” is converted to “hello world” with Shift + Pause.',
+  },
+];
+
+const internals = [
+  {
+    title: 'It remembers keys, not letters',
+    text: 'For every key press Linter keeps the physical key and the modifiers held, not just the character it produced. That is what lets it replay the same presses under a different layout later.',
+  },
+  {
+    title: 'It asks Windows what each layout would type',
+    text: 'On the hotkey the phrase is replayed under every other installed layout, and each result is spell-checked. The one with the most real words wins. If none has any, your text is left untouched.',
+  },
+  {
+    title: 'Each dictionary only judges its own alphabet',
+    text: 'A Cyrillic dictionary has no opinion on Latin text, and would otherwise call any Latin gibberish “correct”. Words are only checked against dictionaries of a matching script.',
+  },
+  {
+    title: 'It lets go when it loses track',
+    text: 'A click, a window switch, the arrow keys, a paste: after any of them Linter can no longer be sure what is in front of the caret, so it forgets the phrase instead of risking an edit in the wrong place.',
+  },
+];
+---
+
+<section id="how" class="border-t border-line bg-card dark:border-line-dark dark:bg-card-dark">
+  <div class="mx-auto max-w-6xl px-6 py-24">
+    <div class="max-w-2xl">
+      <p class="text-sm font-semibold tracking-wide text-key-deep uppercase dark:text-key">How it works</p>
+      <h2 class="mt-3 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">It sits in the tray until you press a key</h2>
+      <p class="mt-4 text-lg text-ink-muted text-pretty dark:text-ink-muted-dark">
+        Linter never rewrites your text on its own. Each of these is something you ask for.
+      </p>
+    </div>
+
+    <div class="mt-16 space-y-24">
+      {scenes.map((s, i) => (
+        <div class:list={['grid items-center gap-10 md:grid-cols-2 md:gap-16', i % 2 === 1 && 'md:[&>*:first-child]:order-2']}>
+          <div>
+            <div class="flex items-center gap-4">
+              <span class="grid size-10 shrink-0 place-items-center rounded-full bg-ink text-sm font-semibold text-white dark:bg-ink-dark dark:text-ink">{s.n}</span>
+              <h3 class="text-2xl font-semibold tracking-tight text-balance">{s.title}</h3>
+            </div>
+            <p class="mt-5 text-lg leading-relaxed text-ink-muted text-pretty dark:text-ink-muted-dark">{s.text}</p>
+          </div>
+          <Demo title={s.window} keys={s.keys} steps={s.steps} still={s.still} label={s.label} class="bg-paper! dark:bg-paper-dark!" />
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-28">
+      <h3 class="text-2xl font-semibold tracking-tight">Under the hood</h3>
+      <ol class="mt-8 grid gap-x-12 gap-y-8 sm:grid-cols-2">
+        {internals.map((item) => (
+          <li class="border-l-2 border-key/50 pl-5">
+            <h4 class="font-semibold tracking-tight">{item.title}</h4>
+            <p class="mt-2 leading-relaxed text-ink-muted dark:text-ink-muted-dark">{item.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>

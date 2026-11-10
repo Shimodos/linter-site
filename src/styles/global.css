@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "Cascadia Mono", Consolas, monospace;
+
+  /* The app icon's colors: the red of the spell-check squiggle, the navy of the tile */
+  --color-accent: #ff5252;
+  --color-accent-soft: #ffe3e3;
+  --color-accent-deep: #e23d3d;
+  --color-key: #5b8def;
+  --color-key-soft: #e3ecfd;
+  --color-key-deep: #3f6fd6;
+
+  --color-ink: #181e30;
+  --color-ink-muted: #5c6370;
+  --color-paper: #f7f7f9;
+  --color-card: #ffffff;
+  --color-line: #e7e8ec;
+
+  --color-ink-dark: #ededf0;
+  --color-ink-muted-dark: #9aa1ad;
+  --color-paper-dark: #0f1115;
+  --color-card-dark: #181b21;
+  --color-line-dark: #272b33;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-paper text-ink antialiased dark:bg-paper-dark dark:text-ink-dark;
+}
+
+/* ---- animated demos (see components/Demo.astro) ---- */
+
+.demo-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.15em;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: currentColor;
+  animation: demo-blink 1.05s steps(1) infinite;
+}
+
+@keyframes demo-blink {
+  50% { opacity: 0; }
+}
+
+/* The spell checker's wavy underline, drawn the way editors draw it. */
+.demo-flag {
+  text-decoration: underline wavy var(--color-accent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+}
+
+.demo-selected {
+  background: color-mix(in srgb, var(--color-key) 35%, transparent);
+  border-radius: 2px;
+}
+
+.demo-key {
+  transition: transform 120ms ease, background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+
+.demo-key.is-down {
+  transform: translateY(2px);
+  background: var(--color-key);
+  color: #fff;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-key) 25%, transparent);
+}
+
+.demo-beep {
+  opacity: 0.35;
+  transition: opacity 200ms ease, color 200ms ease;
+}
+
+.demo-beep.is-on {
+  opacity: 1;
+  color: var(--color-accent);
+  animation: demo-ring 420ms ease;
+}
+
+@keyframes demo-ring {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.25) rotate(-8deg); }
+  70% { transform: scale(1.1) rotate(6deg); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-caret { animation: none; }
+  .demo-beep.is-on { animation: none; }
+}

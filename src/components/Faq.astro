@@ -1,0 +1,64 @@
+---
+const faq = [
+  {
+    q: 'It reads my keyboard. What happens to what I type?',
+    a: 'Nothing leaves your computer: Linter has no network code at all. It keeps the current phrase in memory only, and forgets it at the next full stop, click or window switch. Nothing is written to disk unless you turn on the debug log yourself, and that option says plainly that it records typed words. The source is on GitHub if you want to check.',
+  },
+  {
+    q: 'Will it change my text without asking?',
+    a: 'No. Conversion and fixing only happen when you press their hotkeys. The spell check only plays a sound.',
+  },
+  {
+    q: 'Which languages does it support?',
+    a: 'Any keyboard layout installed in Windows can be converted to and from. Spell checking uses the Windows dictionaries, which Windows installs with each language (Settings → Time & language → Language & region). Out of the box Linter is set up for English, Russian, Ukrainian and Spanish.',
+  },
+  {
+    q: 'I use Right Alt as AltGr. Can I change the hotkey?',
+    a: 'Yes. Settings → Hotkeys → Change, then press the key or combination you want. Any hotkey can also be cleared to switch that action off.',
+  },
+  {
+    q: 'Do the Fix and Ignore keys stop working as normal keys?',
+    a: 'No. They are only intercepted in the moment right after a signal, before you type anything else. The rest of the time Right Ctrl and F9 (or whatever you chose) reach the application untouched.',
+  },
+  {
+    q: 'It did nothing when I pressed the hotkey. Why?',
+    a: 'Either no other layout turns the phrase into real words, or Linter lost track of it: after a click, an arrow key, a paste or a window switch it deliberately forgets the phrase rather than risk editing the wrong text. Select the text and use the selection hotkey instead.',
+  },
+  {
+    q: 'Why does it not work in some windows?',
+    a: 'Programs running as administrator do not accept input from ordinary programs; that is a Windows security rule, and Linter does not ask for administrator rights. Some games and remote-desktop clients read the keyboard in their own way too. Add those to the excluded apps.',
+  },
+  {
+    q: 'Windows SmartScreen says the publisher is unknown. Is that normal?',
+    a: 'Yes, for now. The executable is not signed with a paid code-signing certificate, so the first launch of a freshly downloaded build may show a warning. Click “More info”, then “Run anyway”, or build it yourself from the source with the .NET 8 SDK.',
+  },
+  {
+    q: 'How do I uninstall it?',
+    a: 'Untick “Start with Windows”, exit from the tray menu and delete the folder. Settings live in %AppData%\\Linter; delete that too if you like.',
+  },
+];
+---
+
+<section id="faq" class="border-t border-line dark:border-line-dark">
+  <div class="mx-auto grid max-w-6xl gap-12 px-6 py-24 md:grid-cols-[1fr_2fr]">
+    <div>
+      <p class="text-sm font-semibold tracking-wide text-accent uppercase">FAQ</p>
+      <h2 class="mt-3 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Fair questions about a keyboard tool</h2>
+      <p class="mt-4 text-ink-muted dark:text-ink-muted-dark">
+        Something else? <a href="https://github.com/Shimodos/Linter/issues" class="font-medium text-ink underline decoration-line underline-offset-4 hover:decoration-ink dark:text-ink-dark dark:decoration-line-dark dark:hover:decoration-ink-dark">Open an issue</a> on GitHub.
+      </p>
+    </div>
+
+    <div class="divide-y divide-line rounded-2xl border border-line bg-card dark:divide-line-dark dark:border-line-dark dark:bg-card-dark">
+      {faq.map((item) => (
+        <details class="group px-6 py-5 open:bg-paper/60 dark:open:bg-paper-dark/40">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-6 font-medium tracking-tight [&::-webkit-details-marker]:hidden">
+            {item.q}
+            <span class="grid size-7 shrink-0 place-items-center rounded-full bg-paper text-ink-muted transition group-open:rotate-45 dark:bg-paper-dark dark:text-ink-muted-dark" aria-hidden="true">+</span>
+          </summary>
+          <p class="mt-3 pr-10 leading-relaxed text-ink-muted dark:text-ink-muted-dark">{item.a}</p>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,213 @@
+---
+// A looping, scripted re-enactment of Linter at work inside a mock text window.
+// The script is a list of steps (see the runner below for the vocabulary); the
+// `still` text is what shows without JavaScript or with reduced motion.
+import Icon from './Icon.astro';
+
+export type Step =
+  | ['type', string, number?] // text, ms per character
+  | ['erase', number, number?] // characters, ms per character
+  | ['set', string] // replace everything at once
+  | ['wait', number]
+  | ['key', string] // press the key chip with this label
+  | ['flag', string] // wavy-underline the last occurrence of the word
+  | ['unflag']
+  | ['beep']
+  | ['select', string]
+  | ['replace', string, string] // swap the last occurrence of a for b
+  | ['note', string]; // caption next to the keys
+
+interface Props {
+  title: string;
+  keys: string[];
+  steps: Step[];
+  still: string;
+  label: string; // what the animation shows, for screen readers
+  class?: string;
+}
+
+const { title, keys, steps, still, label, class: className = '' } = Astro.props;
+---
+
+<figure
+  class:list={[
+    'demo overflow-hidden rounded-2xl border border-line bg-card shadow-[0_30px_60px_-25px_rgba(0,0,0,0.3)] dark:border-line-dark dark:bg-card-dark dark:shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)]',
+    className,
+  ]}
+  data-demo={JSON.stringify(steps)}
+>
+  <!-- Screen readers get the description; the moving parts below are hidden from them. -->
+  <figcaption class="sr-only">{label}</figcaption>
+  <div class="flex items-center gap-2 border-b border-line px-4 py-3 dark:border-line-dark" aria-hidden="true">
+    <span class="size-2.5 rounded-full bg-line dark:bg-line-dark"></span>
+    <span class="size-2.5 rounded-full bg-line dark:bg-line-dark"></span>
+    <span class="size-2.5 rounded-full bg-line dark:bg-line-dark"></span>
+    <span class="ml-2 text-xs font-medium text-ink-muted dark:text-ink-muted-dark">{title}</span>
+    <span class="demo-beep ml-auto text-ink-muted dark:text-ink-muted-dark"><Icon name="volume" size={16} /></span>
+  </div>
+
+  <div class="min-h-[7.5rem] px-5 py-5 font-mono text-[17px] leading-relaxed break-words sm:text-lg" aria-hidden="true">
+    <span class="demo-text">{still}</span><span class="demo-caret"></span>
+  </div>
+
+  <div class="flex min-h-[3.25rem] flex-wrap items-center gap-2 border-t border-line bg-paper/60 px-4 py-2.5 dark:border-line-dark dark:bg-paper-dark/40">
+    {keys.map((key) => (
+      <kbd
+        aria-hidden="true"
+        class="demo-key rounded-md border border-line bg-card px-2.5 py-1 font-sans text-xs font-semibold text-ink shadow-[0_2px_0_0_var(--color-line)] dark:border-line-dark dark:bg-card-dark dark:text-ink-dark dark:shadow-[0_2px_0_0_var(--color-line-dark)]"
+        data-key={key}
+      >{key}</kbd>
+    ))}
+    <span class="demo-note ml-1 text-xs text-ink-muted dark:text-ink-muted-dark" aria-hidden="true"></span>
+    <!-- Shown only when the visitor has asked for reduced motion: then nothing moves until they say so. -->
+    <button
+      type="button"
+      class="demo-play ml-auto hidden cursor-pointer items-center gap-1.5 rounded-full bg-ink px-3 py-1 font-sans text-xs font-medium text-white transition hover:bg-black disabled:cursor-default disabled:opacity-40 dark:bg-ink-dark dark:text-ink dark:hover:bg-white"
+    >▶ Play</button>
+  </div>
+</figure>
+
+<script>
+  type Step = [string, ...(string | number | undefined)[]];
+
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+  const escapeHtml = (text: string) =>
+    text.replace(/[&<>]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[ch] ?? ch);
+
+  /** Wraps the last occurrence of `word` in a span, on already-escaped text. */
+  function mark(html: string, word: string | null, className: string) {
+    if (!word) return html;
+    const needle = escapeHtml(word);
+    const at = html.lastIndexOf(needle);
+    if (at < 0) return html;
+    return `${html.slice(0, at)}<span class="${className}">${needle}</span>${html.slice(at + needle.length)}`;
+  }
+
+  function setUp(demo: HTMLElement, autoplay: boolean) {
+    const steps = JSON.parse(demo.dataset.demo ?? '[]') as Step[];
+    const textEl = demo.querySelector<HTMLElement>('.demo-text');
+    const noteEl = demo.querySelector<HTMLElement>('.demo-note');
+    const beepEl = demo.querySelector<HTMLElement>('.demo-beep');
+    const playEl = demo.querySelector<HTMLButtonElement>('.demo-play');
+    if (!textEl || steps.length === 0) return;
+
+    // Autoplay only animates while on screen: no work for demos nobody is
+    // looking at, and each one starts from the beginning when it scrolls into view.
+    let visible = !autoplay;
+    let wake = () => {};
+    if (autoplay) {
+      new IntersectionObserver(
+        ([entry]) => {
+          visible = entry.isIntersecting;
+          if (visible) wake();
+        },
+        { threshold: 0.35 },
+      ).observe(demo);
+    }
+    const whenVisible = () => (visible ? Promise.resolve() : new Promise<void>((resolve) => (wake = resolve)));
+
+    let text = '';
+    let flagged: string | null = null;
+    let selected: string | null = null;
+    const render = () => {
+      let html = escapeHtml(text);
+      html = mark(html, flagged, 'demo-flag');
+      html = mark(html, selected, 'demo-selected');
+      textEl.innerHTML = html;
+    };
+
+    async function playOnce() {
+      text = '';
+      flagged = selected = null;
+      if (noteEl) noteEl.textContent = '';
+      render();
+      await sleep(500);
+
+      for (const [kind, a, b] of steps) {
+        if (!visible) break; // scrolled away mid-run: restart when it comes back
+        switch (kind) {
+          case 'type':
+            for (const ch of String(a)) {
+              text += ch;
+              render();
+              await sleep(Number(b ?? 85) * (0.6 + Math.random() * 0.8));
+            }
+            break;
+          case 'erase':
+            for (let i = 0; i < Number(a); i++) {
+              text = text.slice(0, -1);
+              render();
+              await sleep(Number(b ?? 18));
+            }
+            break;
+          case 'set':
+            text = String(a);
+            render();
+            break;
+          case 'wait':
+            await sleep(Number(a));
+            break;
+          case 'key': {
+            const key = demo.querySelector<HTMLElement>(`[data-key="${a}"]`);
+            key?.classList.add('is-down');
+            await sleep(260);
+            key?.classList.remove('is-down');
+            await sleep(120);
+            break;
+          }
+          case 'flag':
+            flagged = String(a);
+            render();
+            break;
+          case 'unflag':
+            flagged = null;
+            render();
+            break;
+          case 'beep':
+            beepEl?.classList.add('is-on');
+            await sleep(650);
+            beepEl?.classList.remove('is-on');
+            break;
+          case 'select':
+            selected = String(a);
+            render();
+            break;
+          case 'replace': {
+            const at = text.lastIndexOf(String(a));
+            if (at >= 0) text = text.slice(0, at) + String(b) + text.slice(at + String(a).length);
+            selected = null;
+            render();
+            break;
+          }
+          case 'note':
+            if (noteEl) noteEl.textContent = String(a);
+            break;
+        }
+      }
+    }
+
+    if (autoplay) {
+      void (async () => {
+        for (;;) {
+          await whenVisible();
+          await playOnce();
+          await sleep(visible ? 2600 : 0);
+        }
+      })();
+    } else if (playEl) {
+      // Reduced motion: the server-rendered `still` text stays put until asked.
+      playEl.classList.replace('hidden', 'inline-flex');
+      playEl.addEventListener('click', async () => {
+        playEl.disabled = true;
+        await playOnce();
+        playEl.disabled = false;
+      });
+    }
+  }
+
+  // "?animate" forces autoplay, for checking the animations on a machine with reduced motion on.
+  const autoplay = !reducedMotion.matches || new URLSearchParams(location.search).has('animate');
+  document.querySelectorAll<HTMLElement>('[data-demo]').forEach((demo) => setUp(demo, autoplay));
+</script>

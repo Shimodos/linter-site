@@ -1,0 +1,40 @@
+---
+import Shot from './Shot.astro';
+import general from '../assets/shots/settings-general-en.png';
+import hotkeys from '../assets/shots/settings-hotkeys-en.png';
+import spelling from '../assets/shots/settings-spelling-en.png';
+import exceptions from '../assets/shots/settings-exceptions-en.png';
+
+const pages = [
+  { src: hotkeys, title: 'Hotkeys', text: 'Four actions. Click Change and press the key you want; a key can only belong to one action.' },
+  { src: spelling, title: 'Spelling', text: 'Which languages take part in conversion, which of them signal a typo, and what the signal sounds like.' },
+  { src: exceptions, title: 'Exceptions', text: 'Words that are never signalled, and apps where Linter stays completely passive.' },
+  { src: general, title: 'General', text: 'On/off, start with Windows, interface language, and the opt-in debug log.' },
+];
+---
+
+<section id="screens" class="border-t border-line bg-card dark:border-line-dark dark:bg-card-dark">
+  <div class="mx-auto max-w-6xl px-6 py-24">
+    <div class="max-w-2xl">
+      <p class="text-sm font-semibold tracking-wide text-key-deep uppercase dark:text-key">Settings</p>
+      <h2 class="mt-3 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">One small window, four tabs</h2>
+      <p class="mt-4 text-lg text-ink-muted text-pretty dark:text-ink-muted-dark">
+        Right-click the tray icon and choose Settings. Changes apply when you press OK, no restart.
+      </p>
+    </div>
+
+    <div class="mt-14 grid gap-x-10 gap-y-14 sm:grid-cols-2">
+      {pages.map((p) => (
+        <figure>
+          <div class="flex justify-center rounded-2xl bg-paper px-6 py-8 dark:bg-paper-dark">
+            <Shot src={p.src} alt={`Linter settings window, ${p.title} tab`} width={p.src.width} class="h-auto max-w-full" />
+          </div>
+          <figcaption class="mt-5">
+            <span class="font-semibold tracking-tight">{p.title}</span>
+            <span class="text-ink-muted dark:text-ink-muted-dark"> · {p.text}</span>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </div>
+</section>

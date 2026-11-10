@@ -1,0 +1,73 @@
+---
+import Icon from './Icon.astro';
+import Demo, { type Step } from './Demo.astro';
+
+// "ghbdtn? rfr ltkf" is "привет, как дела" typed with the English layout still on.
+const steps: Step[] = [
+  ['type', 'ghbdtn? rfr ltkf'],
+  ['wait', 700],
+  ['key', 'Right Alt'],
+  ['erase', 16],
+  ['type', 'привет, как дела', 22],
+  ['note', 'Retyped in Russian, and the layout is switched for you'],
+  ['wait', 2200],
+  ['type', '?'],
+];
+---
+
+<section id="top" class="relative overflow-hidden">
+  <!-- soft color wash behind the hero -->
+  <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+    <div class="absolute -top-40 right-[-10%] h-[520px] w-[520px] rounded-full bg-accent/15 blur-3xl dark:bg-accent/10"></div>
+    <div class="absolute top-40 left-[-15%] h-[420px] w-[420px] rounded-full bg-key/15 blur-3xl dark:bg-key/10"></div>
+  </div>
+
+  <div class="mx-auto grid max-w-6xl items-center gap-14 px-6 pt-20 pb-24 md:grid-cols-[1.05fr_1fr] md:pt-28 md:pb-32">
+    <div>
+      <p class="mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-card px-3 py-1 text-xs font-medium text-ink-muted dark:border-line-dark dark:bg-card-dark dark:text-ink-muted-dark">
+        <Icon name="windows" size={14} class="text-key" />
+        Native tray app for Windows 10 / 11
+      </p>
+
+      <h1 class="text-5xl font-semibold tracking-tight text-balance sm:text-6xl lg:text-7xl">
+        Wrong layout?<br />One key.
+      </h1>
+
+      <p class="mt-6 max-w-xl text-lg leading-relaxed text-ink-muted text-pretty sm:text-xl dark:text-ink-muted-dark">
+        Typed a whole sentence with the wrong keyboard layout on? Press one key and Linter retypes it
+        in the right one. It also gives a quiet signal when a word is misspelled, and fixes it on request.
+      </p>
+
+      <div class="mt-9 flex flex-wrap items-center gap-4">
+        <a
+          href="#download"
+          class="inline-flex h-12 items-center gap-2.5 rounded-full bg-accent px-6 text-base font-semibold text-white shadow-lg shadow-accent/30 transition hover:bg-accent-deep"
+        >
+          <Icon name="download" size={18} />
+          Download for Windows
+        </a>
+        <a
+          href="https://github.com/Shimodos/Linter"
+          class="inline-flex h-12 items-center gap-2 rounded-full px-5 text-base font-medium text-ink-muted transition hover:text-ink dark:text-ink-muted-dark dark:hover:text-ink-dark"
+        >
+          <Icon name="github" size={18} />
+          View on GitHub
+        </a>
+      </div>
+
+      <ul class="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-muted dark:text-ink-muted-dark">
+        <li class="flex items-center gap-1.5"><Icon name="check" size={16} class="text-accent" /> Free and open source</li>
+        <li class="flex items-center gap-1.5"><Icon name="check" size={16} class="text-accent" /> Never goes online</li>
+        <li class="flex items-center gap-1.5"><Icon name="check" size={16} class="text-accent" /> English, Українська, Русский</li>
+      </ul>
+    </div>
+
+    <Demo
+      title="Any app you type in"
+      keys={['Right Alt']}
+      steps={steps}
+      still="привет, как дела?"
+      label="Animation: the text “ghbdtn? rfr ltkf” is typed with the wrong layout, Right Alt is pressed, and it becomes “привет, как дела”."
+    />
+  </div>
+</section>
